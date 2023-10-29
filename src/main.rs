@@ -6,6 +6,10 @@
 
 mod terminal;
 
+use terminal::{
+    *,
+    app::App,
+};
 /* LOADING CRATES */
 
 //crate that provides functions and structs to link application to openweathermap.org
@@ -36,6 +40,22 @@ use crossterm::{
 use ratatui::{prelude::*, widgets::*};
 
 
-fn main() {
-    println!("Hello, world!");
+fn main(){
+    enable_raw_mode(); //lines 45-50 are essential for ratatui to run
+    let mut stdout = stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture);
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal.clear();
+
+    let app = App::new(); //creation of the app
+    let _res = run_app(&mut terminal, app);
+
+    //lines 58-64 are essential for ratatui to run
+    disable_raw_mode();
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    );
 }

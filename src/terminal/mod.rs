@@ -1,5 +1,4 @@
-mod app;
-pub mod terminal{
+pub mod app;
 
     use ratatui::{prelude::*, widgets::*};
 
@@ -69,12 +68,10 @@ fn ui(frame: &mut Frame, app: &App) {
 
     match app.index {
         0 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
-        1 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
+        1 => frame.render_widget(barchart, chunks[1]),
         2 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
         3 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
         _ => unreachable!(),
     };
-
-}
 
 }
