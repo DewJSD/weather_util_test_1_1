@@ -4,12 +4,7 @@
  */
 
 
-mod {
-    app,
-    lib,
-};
-
-use app::App;
+mod terminal;
 
 /* LOADING CRATES */
 

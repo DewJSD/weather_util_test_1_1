@@ -1,4 +1,17 @@
-pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> Result<()> {
+mod app;
+pub mod terminal{
+
+    use ratatui::{prelude::*, widgets::*};
+
+    use crossterm::{
+        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
+    };
+
+    use std::error::Error;
+
+    use crate::terminal::app::App;
+
+pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> Result<(), Box< dyn Error>> {
     loop {
         terminal.draw(|f| ui(f, &app))?;
 
@@ -37,7 +50,12 @@ fn ui(frame: &mut Frame, app: &App) {
     .highlight_style(Style::default().red().on_white())
     .divider(symbols::DOT);
 
-    
+    let barchart = BarChart::default()
+    .block(Block::default().title("Weather Data").borders(Borders::ALL))
+    .data(&app.data)
+    .bar_width(9)
+    .bar_style(Style::default().fg(Color::Yellow))
+    .value_style(Style::default().fg(Color::Black).bg(Color::Yellow));
 
     let chunks = Layout::default()
     .direction(Direction::Vertical)
@@ -49,13 +67,14 @@ fn ui(frame: &mut Frame, app: &App) {
 //depending on the value of index, this changes what is displayed, notice you can define a block and then add it to a paragraph
 //I'd like to add a graph to this, I don't know how difficult that will be
 
-    let inner = match app.index {
-        0 => Paragraph::new("first").block(b),
-        1 => Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)),
-        2 => Paragraph::new("third").block(b),
-        3 => Paragraph::new("fourth").block(Block::default().title("inner 3").borders(Borders::ALL)),
+    match app.index {
+        0 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
+        1 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
+        2 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
+        3 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
         _ => unreachable!(),
     };
 
-    frame.render_widget(inner, chunks[1]);
+}
+
 }
