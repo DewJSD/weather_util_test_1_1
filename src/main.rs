@@ -3,9 +3,17 @@
  * Description: Terminal application that draws a user interface and displays data retrieved from a weather API
  */
 
+
+mod {
+    app,
+    lib,
+};
+
+use app::App;
+
 /* LOADING CRATES */
 
-//crate that provides functions and structs to link applicaiton to openweathermap.org
+//crate that provides functions and structs to link application to openweathermap.org
 use weather_util_rust::{
     weather_api::{WeatherApi, WeatherLocation},
 };
