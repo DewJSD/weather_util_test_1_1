@@ -1,16 +1,26 @@
 pub mod app;
 
-    use ratatui::{prelude::*, widgets::*};
+use ratatui::{prelude::*, widgets::*};
 
-    use crossterm::{
-        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
-    };
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
+};
 
-    use std::error::Error;
+use std::error::Error;
 
-    use crate::terminal::app::App;
+use crate::terminal::app::App;
 
-pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> Result<(), Box< dyn Error>> {
+use std::env;
+
+use dotenvy::dotenv;
+
+use weather_util_rust::{
+    StringType,
+    weather_data::*,
+    weather_api::{WeatherApi, WeatherLocation},
+};
+
+pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> Result<(), Box<dyn Error>> {
     loop {
         terminal.draw(|f| ui(f, &app))?;
 
@@ -56,6 +66,8 @@ fn ui(frame: &mut Frame, app: &App) {
     .bar_style(Style::default().fg(Color::Yellow))
     .value_style(Style::default().fg(Color::Black).bg(Color::Yellow));
 
+    let weather_paragraph = Paragraph::new(app.weather_string.clone());
+
     let chunks = Layout::default()
     .direction(Direction::Vertical)
     .constraints([Constraint::Length(3), Constraint::Min(0)])
@@ -67,11 +79,29 @@ fn ui(frame: &mut Frame, app: &App) {
 //I'd like to add a graph to this, I don't know how difficult that will be
 
     match app.index {
-        0 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
+        0 => frame.render_widget(weather_paragraph.block(b).alignment(Alignment::Center), chunks[1]),
         1 => frame.render_widget(barchart, chunks[1]),
         2 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
-        3 => frame.render_widget(Paragraph::new("second").block(Block::default().title("inner 1").borders(Borders::ALL)), chunks[1]),
         _ => unreachable!(),
     };
 
+}
+
+#[tokio::main]
+
+async fn my_function() -> Result<StringType, Box<dyn std::error::Error>> {
+    let api = set_api().unwrap();
+    let zipcode_location = WeatherLocation::from_zipcode(73301);
+    let data:WeatherData = api.get_weather_data(&zipcode_location).await.unwrap();
+    let w3 = data.get_current_conditions();
+    return Ok(w3);
+}
+
+pub fn set_api() -> Result<WeatherApi, Box<dyn std::error::Error>> {
+    let api_key = "f1e875bd567884ff618ff3c7bb8d6e19";
+    let api_endpoint = "api.openweathermap.org";
+    let api_path = "data/2.5/";
+    let geo_path = "geo/1.0/";
+    let api = WeatherApi::new(&api_key, &api_endpoint, &api_path, &geo_path);
+    Ok(api)
 }
