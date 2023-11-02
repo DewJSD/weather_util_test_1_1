@@ -21,13 +21,9 @@ use weather_util_rust::{
 use std::{
     path::Path,
     ops::Deref,
-    env,
     io::*,
     cell::RefCell,
 };
-
-//crate for reading environment variables from a .env file
-use dotenvy::*;
 
 //interprets user inputs
 use crossterm::{
@@ -48,7 +44,8 @@ fn main(){
     let mut terminal = Terminal::new(backend).unwrap();
     terminal.clear();
 
-    let app = App::new(); //creation of the app
+    let mut app = App::new(); //creation of the app
+    app.weather_string = app.my_function().unwrap().to_string();
     let _res = run_app(&mut terminal, app);
 
     //lines 58-64 are essential for ratatui to run

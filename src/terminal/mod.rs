@@ -10,10 +10,6 @@ use std::error::Error;
 
 use crate::terminal::app::App;
 
-use std::env;
-
-use dotenvy::dotenv;
-
 use weather_util_rust::{
     StringType,
     weather_data::*,
@@ -85,23 +81,4 @@ fn ui(frame: &mut Frame, app: &App) {
         _ => unreachable!(),
     };
 
-}
-
-#[tokio::main]
-
-async fn my_function() -> Result<StringType, Box<dyn std::error::Error>> {
-    let api = set_api().unwrap();
-    let zipcode_location = WeatherLocation::from_zipcode(73301);
-    let data:WeatherData = api.get_weather_data(&zipcode_location).await.unwrap();
-    let w3 = data.get_current_conditions();
-    return Ok(w3);
-}
-
-pub fn set_api() -> Result<WeatherApi, Box<dyn std::error::Error>> {
-    let api_key = "f1e875bd567884ff618ff3c7bb8d6e19";
-    let api_endpoint = "api.openweathermap.org";
-    let api_path = "data/2.5/";
-    let geo_path = "geo/1.0/";
-    let api = WeatherApi::new(&api_key, &api_endpoint, &api_path, &geo_path);
-    Ok(api)
 }
