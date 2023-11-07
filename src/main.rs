@@ -47,7 +47,7 @@ fn main(){
 
     let mut app = App::new(); //creation of the app
     app.weather_string = app.my_function().unwrap().to_string();
-    app.load_forecast();
+    app.load_forecast_weekly();
     let _res = run_app(&mut terminal, app);
 
     //lines 58-64 are essential for ratatui to run

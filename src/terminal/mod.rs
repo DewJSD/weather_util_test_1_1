@@ -58,7 +58,7 @@ fn ui(frame: &mut Frame, app: &App) {
     let barchart = BarChart::default()
     .block(Block::default().title("Weather Data").borders(Borders::ALL))
     .data(&app.data)
-    .bar_width(9)
+    .bar_width(18)
     .bar_style(Style::default().fg(Color::Yellow))
     .value_style(Style::default().fg(Color::Black).bg(Color::Yellow));
 
