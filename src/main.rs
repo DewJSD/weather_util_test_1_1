@@ -15,6 +15,8 @@ use terminal::{
 //crate that provides functions and structs to link application to openweathermap.org
 use weather_util_rust::{
     weather_api::{WeatherApi, WeatherLocation},
+    weather_forecast::{WeatherForecast, ForecastEntry, CityEntry},
+    temperature::*,
 };
 
 //accessing the standard library
@@ -35,7 +37,6 @@ use crossterm::{
 //crate that provides methods for creating a terminal user interface
 use ratatui::{prelude::*, widgets::*};
 
-
 fn main(){
     enable_raw_mode(); //lines 45-50 are essential for ratatui to run
     let mut stdout = stdout();
@@ -46,6 +47,7 @@ fn main(){
 
     let mut app = App::new(); //creation of the app
     app.weather_string = app.my_function().unwrap().to_string();
+    app.load_forecast();
     let _res = run_app(&mut terminal, app);
 
     //lines 58-64 are essential for ratatui to run
@@ -55,4 +57,5 @@ fn main(){
         LeaveAlternateScreen,
         DisableMouseCapture
     );
+
 }
