@@ -1,15 +1,16 @@
+/* Names: Garrett Thompson, Jeffery Dew
+ * Date: 11/5/23
+ * Description: File that defines an app struct, this struct is configured based on what we want the terminal to display
+ */
+
 use weather_util_rust::{
-    StringType,
-    weather_data::*,
     weather_api::{WeatherApi, WeatherLocation},
-    weather_forecast::{WeatherForecast, ForecastEntry, CityEntry},
+    weather_data::*,
+    weather_forecast::WeatherForecast,
+    StringType,
 };
 
-use time::{Duration, format_description::FormatItem, Weekday};
-use time::format_description::modifier::Padding;
-use time::macros::format_description;
-use time::OffsetDateTime;
-use tokio::main;
+use time::Weekday;
 
 pub struct App<'a> {
     pub titles: Vec<&'a str>,
@@ -18,7 +19,6 @@ pub struct App<'a> {
     pub weather_string: String,
     pub zipcode: WeatherLocation,
 }
-
 
 impl<'a> App<'a> {
     pub fn new() -> App<'a> {
@@ -33,7 +33,7 @@ impl<'a> App<'a> {
 
     pub fn next(&mut self) {
         self.index = (self.index + 1) % self.titles.len();
-        self.weather_string = self.my_function().unwrap().to_string();
+        self.weather_string = self.load_data().unwrap().to_string();
         self.load_forecast_weekly();
     }
 
@@ -43,23 +43,16 @@ impl<'a> App<'a> {
         } else {
             self.index = self.titles.len() - 1;
         }
-        self.weather_string = self.my_function().unwrap().to_string();
+        self.weather_string = self.load_data().unwrap().to_string();
         self.load_forecast_weekly();
     }
 
     #[tokio::main]
 
-        pub async fn my_function(&self) -> Result<StringType, Box<dyn std::error::Error>> {
+    pub async fn load_data(&self) -> Result<StringType, Box<dyn std::error::Error>> {
         let api = Self::set_api().await?;
-        let data:WeatherData = api.get_weather_data(&self.zipcode).await?;
-        let w3 = data.get_current_conditions();
-        return Ok(w3);
-    }
-
-    pub async fn load_data(&self) -> Result<String, Box<dyn std::error::Error>> {
-        let api = Self::set_api().await?;
-        let data:WeatherData = api.get_weather_data(&self.zipcode).await?;
-        let msg = String::new();
+        let data: WeatherData = api.get_weather_data(&self.zipcode).await?;
+        let msg = data.get_current_conditions();
         return Ok(msg);
     }
 
@@ -71,56 +64,64 @@ impl<'a> App<'a> {
         let api = WeatherApi::new(&api_key, &api_endpoint, &api_path, &geo_path);
         Ok(api)
     }
-    
 
     #[tokio::main]
     pub async fn load_forecast_weekly(&mut self) {
-    self.data.clear();
+        self.data.clear();
 
-    let city = "Sioux Falls";
-    let days_of_week = vec!["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        let city = "Sioux Falls";
+        let days_of_week = vec![
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+        ];
 
-    let api = Self::set_api().await.unwrap();
+        let api = Self::set_api().await.unwrap();
 
-    for day in days_of_week {
-        let location = WeatherLocation::from_city_name(city);
-        let forecast: WeatherForecast = api.get_weather_forecast(&location).await.unwrap();
+        for day in days_of_week {
+            let location = WeatherLocation::from_city_name(city);
+            let forecast: WeatherForecast = api.get_weather_forecast(&location).await.unwrap();
 
-        let entries_for_day = forecast.list.iter().filter(|&entry| entry.dt.weekday() == Self::str_to_weekday(day).unwrap());
-        let mut morning = false;
-        let mut afternoon = false;
+            let entries_for_day = forecast
+                .list
+                .iter()
+                .filter(|&entry| entry.dt.weekday() == Self::str_to_weekday(day).unwrap());
+            let mut morning = false;
+            let mut afternoon = false;
 
-        for entry in entries_for_day{
+            for entry in entries_for_day {
+                let time_of_day: &str = if entry.dt.hour() < 12 {
+                    "morning"
+                } else {
+                    "afternoon"
+                };
 
-            let time_of_day: &str = if entry.dt.hour() < 12 {
-                "morning"
-            } else {
-                "afternoon"
-            };
-
-            if(time_of_day == "morning" && morning != true){
-            let display = Self::generate_display(day, entry.dt.hour().into());
-            // Access the temperature from the current entry
-            let temp_fahrenheit: f64 = entry.main.temp.fahrenheit();
-            // Create a tuple with the city name, day of the week, time of day, and temperature
-            let data = (display, temp_fahrenheit as u64);
-            self.data.push(data);
-            morning = true;
-            }
-            else if(time_of_day == "afternoon" && afternoon != true){
-                let display = Self::generate_display(day, entry.dt.hour().into());
-                // Access the temperature from the current entry
-                let temp_fahrenheit: f64 = entry.main.temp.fahrenheit();
-                // Create a tuple with the city name, day of the week, time of day, and temperature
-                let data = (display, temp_fahrenheit as u64);
-                self.data.push(data);
-                afternoon = true;
+                if time_of_day == "morning" && morning != true {
+                    let display = Self::generate_display(day, entry.dt.hour().into());
+                    // Access the temperature from the current entry
+                    let temp_fahrenheit: f64 = entry.main.temp.fahrenheit();
+                    // Create a tuple with a string and temperature
+                    let data = (display, temp_fahrenheit as u64);
+                    self.data.push(data);
+                    morning = true;
+                } else if time_of_day == "afternoon" && afternoon != true {
+                    let display = Self::generate_display(day, entry.dt.hour().into());
+                    // Access the temperature from the current entry
+                    let temp_fahrenheit: f64 = entry.main.temp.fahrenheit();
+                    // Create a tuple with a string and temperature
+                    let data = (display, temp_fahrenheit as u64);
+                    self.data.push(data);
+                    afternoon = true;
                 }
+            }
         }
     }
-
-
-}
 
     fn str_to_weekday(day_str: &str) -> Option<Weekday> {
         match day_str {
@@ -136,15 +137,9 @@ impl<'a> App<'a> {
     }
 
     fn generate_display(day: &str, hour: u32) -> &'static str {
-        let time_of_day = if hour < 12 {
-            "Morning"
-        } else {
-            "Afternoon"
-        };
-    
+        let time_of_day = if hour < 12 { "Morning" } else { "Afternoon" };
+
         let display = format!("{} {}", day, time_of_day);
         Box::leak(display.into_boxed_str())
     }
-
-
 }
